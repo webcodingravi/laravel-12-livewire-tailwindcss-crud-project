@@ -19,6 +19,7 @@ class EmployeeCrud extends Component
     public $employeeId;
     public $oldImage;
     public $filterStatus = '';
+    public $showTrashed = false;
 
         public function openModal() {
             $this->isOpen = true;
@@ -117,7 +118,15 @@ class EmployeeCrud extends Component
 
               $employee->update($data);
 
-              session()->flash('success','Employee updated successfully!');
+
+
+              $this->dispatch('alert',
+                type: 'success',
+                title: 'Success!',
+                text: 'Employee added successfully'
+);
+
+
               $this->resetForm();
 
             }
@@ -132,15 +141,72 @@ class EmployeeCrud extends Component
 
               $employee = Employee::findOrFail($id);
 
-              if(!empty($employee->image)) {
-                Storage::disk('public')->delete('uploads/'.$employee->image);
-              }
+
               $employee->delete();
 
-              session()->flash('success','Employee successfuly Deleted');
+              $this->dispatch('alert',
+              type:'success',
+              title: 'Success',
+              text:'Employee move to trash'
+              );
             }
             catch(\Exception $e) {
-                session()->flash('error',$e->getMessage());
+
+            $this->dispatch('alert',
+              type:'error',
+              title: 'Error!',
+              text:$e->getMessage()
+              );
+            }
+        }
+
+
+        public function restore($id) {
+          try{
+             Employee::onlyTrashed()
+            ->findOrFail($id)
+            ->restore();
+
+              $this->dispatch('alert',
+              type:'success',
+              title: 'Success',
+              text:'Employee Restored Successfully'
+              );
+
+          }
+          catch(\Exception $e) {
+             $this->dispatch('alert',
+              type:'error',
+              title: 'Error!',
+              text:$e->getMessage()
+              );
+          }
+        }
+
+        public function forceDelete($id) {
+            try {
+              $employee = Employee::onlyTrashed()->findOrFail($id);
+
+               if(!empty($employee->image)) {
+                Storage::disk('public')->delete('uploads/'.$employee->image);
+              }
+
+              $employee->forceDelete();
+
+
+              $this->dispatch('alert',
+              type:'success',
+              title: 'Success',
+              text:'Employee permanently deleted'
+              );
+
+            }
+            catch(\Exception $e) {
+                $this->dispatch('alert',
+              type:'error',
+              title: 'Error!',
+              text:$e->getMessage()
+              );
             }
         }
 
@@ -149,9 +215,17 @@ class EmployeeCrud extends Component
         }
 
 
+
+
     public function render()
     {
         $employees = Employee::query()
+        ->when($this->showTrashed, function($query) {
+            $query->onlyTrashed();
+        })
+        ->when(!$this->showTrashed,function($query){
+            $query->where('deleted_at',null);
+        } )
         ->when($this->search,function($query) {
             $query->where('name','like','%'.$this->search.'%')
         ->orWhere('email','like','%'.$this->search.'%');

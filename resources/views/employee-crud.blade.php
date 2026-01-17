@@ -1,8 +1,13 @@
 <div>
     <div class="h-screen  flex items-center justify-center flex-col gap-6">
-        <x-alertmessage />
+        {{-- <x-alertmessage /> --}}
         <div class="rounded bg-white shadow p-4 w-8/12">
             <div class="flex items-center justify-end gap-4 mb-4">
+                <button
+                    class="bg-indigo-500 text-white px-6 py-3 rounded active:scale-90 transiton-all duration-300 cursor-pointer"
+                    wire:click="$toggle('showTrashed')">
+                    {{ $showTrashed ? 'Show Active' : 'Show Trash' }}
+                </button>
                 <select class="px-6 py-3 border border-slate-200 rounded-md focus:outline-none cursor-pointer"
                     wire:model.live="filterStatus">
                     <option value="">All</option>
@@ -58,13 +63,23 @@
 
                                 </td>
                                 <td class="space-x-4">
+
                                     <button
                                         class="text-white px-4 py-2 active:scale-90 transition-all duration-300 bg-indigo-500 rounded cursor-pointer"
                                         wire:click="edit(({{ $employee->id }}))">Edit</button>
-                                    <button
-                                        class="text-white px-4 py-2 active:scale-90 transition-all duration-300 bg-red-500 rounded cursor-pointer"
-                                        onclick="confirm('Are you sure?')"
-                                        wire:click="delete({{ $employee->id }})">Delete</button>
+                                    @if (!$showTrashed)
+                                        <button
+                                            class="text-white px-4 py-2 active:scale-90 transition-all duration-300 bg-red-500 rounded cursor-pointer"
+                                            wire:click="delete({{ $employee->id }})">Delete</button>
+                                    @else
+                                        <button
+                                            class="text-white px-4 py-2 active:scale-90 transition-all duration-300 bg-green-500 rounded cursor-pointer"
+                                            wire:click="restore({{ $employee->id }})">Restore</button>
+
+                                        <button
+                                            class="text-white px-4 py-2 active:scale-90 transition-all duration-300 bg-red-500 rounded cursor-pointer"
+                                            wire:click="forceDelete({{ $employee->id }})">Delete Forever</button>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

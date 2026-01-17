@@ -7,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Employee Management System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
@@ -17,6 +18,20 @@
         <livewire:employee-crud />
 
     </div>
+
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('alert', (data) => {
+                Swal.fire({
+                    icon: data.type,
+                    title: data.title,
+                    text: data.text,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            });
+        });
+    </script>
 
     @livewireScripts
 </body>
